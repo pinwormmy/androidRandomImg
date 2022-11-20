@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView iv;
     ImageView imageview;
     
+    // 커밋테스트용
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
