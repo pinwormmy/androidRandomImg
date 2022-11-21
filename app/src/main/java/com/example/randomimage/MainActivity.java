@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+// 커밋 확인용
 public class MainActivity extends AppCompatActivity {
 
     final static int PERMISSION_REQUEST_CODE = 1001;
