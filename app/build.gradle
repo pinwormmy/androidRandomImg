@@ -5,7 +5,7 @@ android {
     buildToolsVersion "30.0.1"
 
     defaultConfig {
-        applicationId "com.ARVT.arvtraining"
+        applicationId "com.example.randomimage"
         minSdkVersion 23
         targetSdkVersion 30
         versionCode 7

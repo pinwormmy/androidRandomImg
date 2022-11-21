@@ -1,14 +1,10 @@
-package com.example.arvtraining;
+package com.example.randomimage;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
@@ -28,9 +24,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -38,8 +32,8 @@ public class MainActivity extends AppCompatActivity {
     final static int PERMISSION_REQUEST_CODE = 1001;
     ImageView iv;
     ImageView imageview;
-    
-    // 커밋테스트용
+    int position = -1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,16 +42,6 @@ public class MainActivity extends AppCompatActivity {
         final Button button = findViewById(R.id.changeBtn);
         imageview = findViewById(R.id.image1);
         iv = findViewById(R.id.image1);
-        iv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(); //기기 기본 갤러리 접근
-                intent.setType(MediaStore.Images.Media.CONTENT_TYPE); //구글 갤러리 접근 //
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(intent,101);
-            }
-        });
 
         button.setOnClickListener(new View.OnClickListener(){
             @RequiresApi(api = Build.VERSION_CODES.N)
@@ -84,19 +68,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-
     }
     
     private void permissionCheck(){
         if(Build.VERSION.SDK_INT >= 23){
             int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
             ArrayList<String> arrayPermission = new ArrayList<String>();
-
             if (permissionCheck != PackageManager.PERMISSION_GRANTED){
                 arrayPermission.add(Manifest.permission.READ_EXTERNAL_STORAGE);
             }
-
             if(arrayPermission.size() > 0){
                 String strArray[] = new String[arrayPermission.size()];
                 strArray = arrayPermission.toArray(strArray);
@@ -110,12 +90,11 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
         switch (requestCode){
             case PERMISSION_REQUEST_CODE: {
-                if (grantResults.length < 1){
+                if (grantResults.length < 1) {
                     Toast.makeText(this, "권한 획득 실패", Toast.LENGTH_SHORT).show();
                     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
                     return;
                 }
-
                 for (int i= 0; i< grantResults.length; i++) {
                     if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(this, "거부되었습니다.", Toast.LENGTH_SHORT).show();
@@ -123,30 +102,24 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
                 }
-
                 Toast.makeText(this, "승인되었습니다.", Toast.LENGTH_SHORT).show();
-                //초기화 코드임
-
-                }
-
-                break;
             }
-
-            super.onRequestPermissionsResult(requestCode, permissions,grantResults);
+            break;
         }
+        super.onRequestPermissionsResult(requestCode, permissions,grantResults);
+    }
 
     private Uri pickRandomImage() {
         Uri targetUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        String targetDir = Environment.getExternalStorageDirectory().toString() + "/select";
+        String targetDir = Environment.getExternalStorageDirectory().toString() + "/DCIM/select";
         Log.d("체크","저장용 폴더경로 : " + targetDir);
         File targetDirFile = new File(targetDir);
         if(!targetDirFile.exists()){
-            Log.d("체크","이미지 저장용 폴더 생성");
-            targetDirFile.mkdirs();
+            Log.d("체크","지정 폴더 없음");
             Toast.makeText(this,
-                    "select 폴더 생성했습니다! 해당 폴더에 추첨할 이미지 파일을 넣으세요!!",
+                    "지정 폴더가 없습니다. 갤러리 앱에서 select 폴더(앨범)를 만들고 추첨할 그림을 넣어주세요.",
                     Toast.LENGTH_LONG).show();
-            //return null;
+            return null;
         }
         targetUri = targetUri.buildUpon().appendQueryParameter("bucketId",
                 String.valueOf(targetDir.toLowerCase().hashCode())).build();
@@ -159,24 +132,35 @@ public class MainActivity extends AppCompatActivity {
 
         if(c != null){
             int total = c.getCount();
-            int position = (int) (Math.random() * total);
-            if (total > 0) {
+            Log.d("난수체크", "랜덤전 : " + position);
+            while (true) {
+                int newPosition = (int) (Math.random() * total);
+                if(position != newPosition) {
+                    position = newPosition;
+                    Log.d("난수체크", "랜덤후(대입확인) : " + position);
+                    break;
+                }
+            }
+            if (total > 1) {
                 if (c.moveToPosition(position)) {
                     String data = c.getString(
                             c.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
                     long id = c.getLong(
                             c.getColumnIndex(MediaStore.Images.ImageColumns._ID));
                     uri = Uri.parse(data);
+                    Log.d("체크","선택된 파일 : " + uri.toString());
                 }
+            }else {
+                Toast.makeText(this,
+                        "지정된 폴더(select)에 최소 2장 이상의 그림을 넣어주세요",
+                        Toast.LENGTH_LONG).show();
             }
             c.close();
         }
-        //Log.d("체크","선택된 파일 : " + uri.toString());
         return uri;
     }
 
     public static Bitmap rotateBitmap(Bitmap bitmap, int orientation) {
-
         Matrix matrix = new Matrix();
         switch (orientation) {
             case ExifInterface.ORIENTATION_NORMAL:

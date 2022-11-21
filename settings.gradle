@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name = "ARV training"
+rootProject.name = "Random Image"

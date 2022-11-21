@@ -1,4 +1,4 @@
-package com.example.arvtraining;
+package com.example.randomimage;
 
 import android.content.Context;
 
