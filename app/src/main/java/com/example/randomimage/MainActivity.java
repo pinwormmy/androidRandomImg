@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-// 커밋 테스트. 리모트 꼬여서 수정하기
 public class MainActivity extends AppCompatActivity {
 
     final static int PERMISSION_REQUEST_CODE = 1001;
@@ -41,8 +40,8 @@ public class MainActivity extends AppCompatActivity {
         permissionCheck();
         setContentView(R.layout.activity_main);
         final Button button = findViewById(R.id.changeBtn);
-        imageview = findViewById(R.id.image1);
-        iv = findViewById(R.id.image1);
+        imageview = findViewById(R.id.selectedImage);
+        iv = findViewById(R.id.selectedImage);
 
         button.setOnClickListener(new View.OnClickListener(){
             @RequiresApi(api = Build.VERSION_CODES.N)
