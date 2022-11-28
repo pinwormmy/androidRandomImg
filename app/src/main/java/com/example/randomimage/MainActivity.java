@@ -1,6 +1,7 @@
 package com.example.randomimage;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -15,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -26,12 +28,14 @@ import androidx.core.content.ContextCompat;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
     final static int PERMISSION_REQUEST_CODE = 1001;
-    ImageView iv;
+    Button changeBtn;
     ImageView imageview;
+    TextView targetNumber;
     int position = -1;
 
     @Override
@@ -39,37 +43,49 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         permissionCheck();
         setContentView(R.layout.activity_main);
-        final Button button = findViewById(R.id.changeBtn);
+        changeBtn = findViewById(R.id.changeBtn);
         imageview = findViewById(R.id.selectedImage);
-        iv = findViewById(R.id.selectedImage);
+        targetNumber = findViewById(R.id.targetText);
 
-        button.setOnClickListener(new View.OnClickListener(){
+        changeBtn.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View view) {
-                Uri uri1 = pickRandomImage();
-                if(uri1 != null) {
-                    Bitmap bm = null;
-                    try {
-                        bm = MediaStore.Images.Media.getBitmap(getContentResolver(), Uri.parse("file://" + uri1));
-                    } catch (IOException e) {
-                        e.printStackTrace();
+
+                if(imageview.getVisibility() == view.INVISIBLE) {
+                    Log.d("체크","이미 불러온 이미지가 있고, 이미지 공개 작동");
+                    changeBtn.setText("이미지 선택");
+                    imageview.setVisibility(view.VISIBLE);
+                }else {
+                    Uri uri1 = pickRandomImage();
+                    if(uri1 != null) {
+                        Bitmap bm = null;
+                        try {
+                            bm = MediaStore.Images.Media.getBitmap(getContentResolver(),
+                                    Uri.parse("file://" + uri1));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        ExifInterface exif = null;
+                        try {
+                            exif = new ExifInterface(String.valueOf(uri1));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                                ExifInterface.ORIENTATION_UNDEFINED);
+                        Bitmap bmRotated = rotateBitmap(bm, orientation);
+                        imageview.setImageBitmap(bmRotated);
+                        imageview.setVisibility(view.INVISIBLE);
+                        targetNumber.setText(pickTargetNum());
+                        changeBtn.setText("이미지 보기");
                     }
-                    ExifInterface exif = null;
-                    try {
-                        exif = new ExifInterface(String.valueOf(uri1));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                            ExifInterface.ORIENTATION_UNDEFINED);
-                    Bitmap bmRotated = rotateBitmap(bm, orientation);
-                    imageview.setImageBitmap(bmRotated);
                 }
             }
         });
+
     }
-    
+
     private void permissionCheck(){
         if(Build.VERSION.SDK_INT >= 23){
             int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -159,6 +175,25 @@ public class MainActivity extends AppCompatActivity {
         }
         return uri;
     }
+
+    private String pickTargetNum() {
+            String targetNum = getKeyForNumberAndUppercase(8);
+            Log.d("체크","생성된 타겟넘버 : " + targetNum);
+            return targetNum;
+    }
+
+    public String getKeyForNumberAndUppercase(int keyLength) {
+        Random rnd=new Random();
+        StringBuffer buf=new StringBuffer();
+        for(int i=1; i<=keyLength; i++) {
+            if(rnd.nextBoolean())
+                buf.append((char)(rnd.nextInt(26)+65));   // 0~25(26개) + 65
+            else
+                buf.append(rnd.nextInt(10));
+        }
+        return buf.toString();
+    }
+
 
     public static Bitmap rotateBitmap(Bitmap bitmap, int orientation) {
         Matrix matrix = new Matrix();
