@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
+// 커밋테스트.
 public class MainActivity extends AppCompatActivity {
 
     final static int PERMISSION_REQUEST_CODE = 1001;
