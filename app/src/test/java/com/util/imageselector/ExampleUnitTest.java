@@ -1,4 +1,4 @@
-package com.example.randomimage;
+package com.util.imageselector;
 
 import org.junit.Test;
 
