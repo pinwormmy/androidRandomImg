@@ -1,6 +1,7 @@
 package com.util.imageselector;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -35,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
     final static int PERMISSION_REQUEST_CODE = 1001;
     Button changeBtn;
     ImageView imageview;
-    TextView targetNumber;
+    TextView targetNumHaeder;
+    TextView displayTargetNumber;
     int position = -1;
 
     @Override
@@ -45,42 +47,48 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         changeBtn = findViewById(R.id.changeBtn);
         imageview = findViewById(R.id.selectedImage);
-        targetNumber = findViewById(R.id.targetText);
+        targetNumHaeder = findViewById(R.id.targetText);
+        displayTargetNumber = findViewById(R.id.displayTargetNumber);
 
         changeBtn.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View view) {
-
-                if(imageview.getVisibility() == view.INVISIBLE) {
-                    Log.d("체크","이미 불러온 이미지가 있고, 이미지 공개 작동");
-                    changeBtn.setText("이미지 선택");
-                    imageview.setVisibility(view.VISIBLE);
-                }else {
-                    Uri uri1 = pickRandomImage();
-                    if(uri1 != null) {
-                        Bitmap bm = null;
-                        try {
-                            bm = MediaStore.Images.Media.getBitmap(getContentResolver(),
-                                    Uri.parse("file://" + uri1));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        ExifInterface exif = null;
-                        try {
-                            exif = new ExifInterface(String.valueOf(uri1));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                                ExifInterface.ORIENTATION_UNDEFINED);
-                        Bitmap bmRotated = rotateBitmap(bm, orientation);
-                        imageview.setImageBitmap(bmRotated);
-                        imageview.setVisibility(view.INVISIBLE);
-                        targetNumber.setText(pickTargetNum());
-                        changeBtn.setText("이미지 보기");
+                String targetNumber = pickTargetNum();
+                Uri uri1 = pickRandomImage();
+                if(uri1 != null) {
+                    Bitmap bm = null;
+                    try {
+                        bm = MediaStore.Images.Media.getBitmap(getContentResolver(),
+                                Uri.parse("file://" + uri1));
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
+                    ExifInterface exif = null;
+                    try {
+                        exif = new ExifInterface(String.valueOf(uri1));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                            ExifInterface.ORIENTATION_UNDEFINED);
+                    Bitmap bmRotated = rotateBitmap(bm, orientation);
+                    imageview.setImageBitmap(bmRotated);
+                    imageview.setVisibility(view.GONE);
+                    targetNumHaeder.setText(targetNumber);
+                    targetNumHaeder.setVisibility(View.INVISIBLE);
+                    displayTargetNumber.setText(targetNumber);
+                    displayTargetNumber.setVisibility(View.VISIBLE);
                 }
+            }
+        });
+
+        displayTargetNumber.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                targetNumHaeder.setVisibility(View.VISIBLE);
+                displayTargetNumber.setVisibility(View.GONE);
+                imageview.setVisibility(View.VISIBLE);
             }
         });
 
@@ -159,10 +167,10 @@ public class MainActivity extends AppCompatActivity {
             }
             if (total > 1) {
                 if (c.moveToPosition(position)) {
-                    String data = c.getString(
-                            c.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
-                    long id = c.getLong(
-                            c.getColumnIndex(MediaStore.Images.ImageColumns._ID));
+                    @SuppressLint("Range") String data = c.getString
+                            (c.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+                    //@SuppressLint("Range") long id = c.getLong
+                    // (c.getColumnIndex(MediaStore.Images.ImageColumns._ID));
                     uri = Uri.parse(data);
                     Log.d("체크","선택된 파일 : " + uri.toString());
                 }
@@ -228,7 +236,8 @@ public class MainActivity extends AppCompatActivity {
                 return bitmap;
         }
         try {
-            Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
+                    bitmap.getHeight(), matrix, true);
             bitmap.recycle();
             return bmRotated;
         } catch (OutOfMemoryError e) {
