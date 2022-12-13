@@ -135,13 +135,13 @@ public class MainActivity extends AppCompatActivity {
 
     private Uri pickRandomImage() {
         Uri targetUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        String targetDir = Environment.getExternalStorageDirectory().toString() + "/DCIM/select";
+        String targetDir = Environment.getExternalStorageDirectory().toString() + "/DCIM/SELECT";
         Log.d("체크","저장용 폴더경로 : " + targetDir);
         File targetDirFile = new File(targetDir);
         if(!targetDirFile.exists()){
             Log.d("체크","지정 폴더 없음");
             Toast.makeText(this,
-                    "지정 폴더가 없습니다. 갤러리 앱에서 select 폴더(앨범)를 만들고 추첨할 그림을 넣어주세요.",
+                    "지정 폴더가 없습니다. 갤러리 앱에서 SELECT(모두 대문자) 폴더(앨범)를 만들고 뽑을 그림을 넣어주세요.",
                     Toast.LENGTH_LONG).show();
             return null;
         }
@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
                 targetUri,
                 new String[]{MediaStore.Images.ImageColumns._ID, MediaStore.Images.ImageColumns.DATA},
                 MediaStore.Images.Media.BUCKET_DISPLAY_NAME + " = ? ",
-                new String[]{"select"}, null);
+                new String[]{"SELECT"}, null);
         Uri uri = null;
 
         if(c != null){
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }else {
                 Toast.makeText(this,
-                        "지정된 폴더(select)에 최소 2장 이상의 그림을 넣어주세요",
+                        "지정된 폴더(SELECT)에 최소 2장 이상의 그림을 넣어주세요",
                         Toast.LENGTH_LONG).show();
             }
             c.close();
@@ -185,21 +185,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String pickTargetNum() {
-            String targetNum = getKeyForNumberAndUppercase(8);
+            String targetNum = getKeyForRandomNum(8);
             Log.d("체크","생성된 타겟넘버 : " + targetNum);
             return targetNum;
     }
 
-    public String getKeyForNumberAndUppercase(int keyLength) {
-        Random rnd=new Random();
-        StringBuffer buf=new StringBuffer();
-        for(int i=1; i<=keyLength; i++) {
-            if(rnd.nextBoolean())
-                buf.append((char)(rnd.nextInt(26)+65));   // 0~25(26개) + 65
-            else
-                buf.append(rnd.nextInt(10));
+    public String getKeyForRandomNum(int keyLength) {
+        Random random=new Random();
+        String key = Integer.toString( random.nextInt(keyLength) + 1);
+        for (int i = 1; i < keyLength; i++) {
+            key+= Integer.toString(random.nextInt(keyLength + 1));
         }
-        return buf.toString();
+        return key;
     }
 
 
