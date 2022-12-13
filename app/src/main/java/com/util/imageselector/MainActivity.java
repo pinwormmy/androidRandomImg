@@ -136,15 +136,15 @@ public class MainActivity extends AppCompatActivity {
     private Uri pickRandomImage() {
         Uri targetUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         String targetDir = Environment.getExternalStorageDirectory().toString() + "/DCIM/SELECT";
-        Log.d("체크","저장용 폴더경로 : " + targetDir);
         File targetDirFile = new File(targetDir);
-        if(!targetDirFile.exists()){
-            Log.d("체크","지정 폴더 없음");
+        if(!targetDirFile.toString().equals(targetDir)){
+            Log.d("체크","지정 폴더 없음" + targetDirFile);
             Toast.makeText(this,
-                    "지정 폴더가 없습니다. 갤러리 앱에서 SELECT(모두 대문자) 폴더(앨범)를 만들고 뽑을 그림을 넣어주세요.",
+                    "선택용 폴더가 존재하지 않습니다.\n 갤러리앱에서 SELECT(모두 대문자) 폴더(앨범)를\n 만들고 뽑을 그림을 넣어주세요.",
                     Toast.LENGTH_LONG).show();
             return null;
         }
+        Log.d("체크","저장용 폴더경로 : " + targetDirFile);
         targetUri = targetUri.buildUpon().appendQueryParameter("bucketId",
                 String.valueOf(targetDir.toLowerCase().hashCode())).build();
         Cursor c = getContentResolver().query(
