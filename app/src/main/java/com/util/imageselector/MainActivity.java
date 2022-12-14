@@ -135,12 +135,12 @@ public class MainActivity extends AppCompatActivity {
 
     private Uri pickRandomImage() {
         Uri targetUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        String targetDir = Environment.getExternalStorageDirectory().toString() + "/DCIM/SELECT";
+        String targetDir = Environment.getExternalStorageDirectory().toString() + "/DCIM/select";
         File targetDirFile = new File(targetDir);
-        if(!targetDirFile.toString().equals(targetDir)){
+        if(!targetDirFile.exists()){
             Log.d("체크","지정 폴더 없음" + targetDirFile);
             Toast.makeText(this,
-                    "선택용 폴더가 존재하지 않습니다.\n 갤러리앱에서 SELECT(모두 대문자) 폴더(앨범)를\n 만들고 뽑을 그림을 넣어주세요.",
+                    "선택용 폴더가 존재하지 않습니다.\n 갤러리앱에서 select(모두 소문자) 폴더(앨범)를\n 만들고 뽑을 그림을 넣어주세요.",
                     Toast.LENGTH_LONG).show();
             return null;
         }
@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
                 targetUri,
                 new String[]{MediaStore.Images.ImageColumns._ID, MediaStore.Images.ImageColumns.DATA},
                 MediaStore.Images.Media.BUCKET_DISPLAY_NAME + " = ? ",
-                new String[]{"SELECT"}, null);
+                new String[]{"select"}, null);
         Uri uri = null;
 
         if(c != null){
@@ -174,10 +174,18 @@ public class MainActivity extends AppCompatActivity {
                     uri = Uri.parse(data);
                     Log.d("체크","선택된 파일 : " + uri.toString());
                 }
+            }else if(total == 0) {
+                Toast.makeText(this,
+                        "폴더가 비었거나, select(모두 소문자) 폴더가 존재하지 않습니다.\n 폴더명을 확인해주세요.",
+                        Toast.LENGTH_LONG).show();
+                position = -1;
+                return null;
             }else {
                 Toast.makeText(this,
-                        "지정된 폴더(SELECT)에 최소 2장 이상의 그림을 넣어주세요",
+                        "지정된 폴더(select)에 최소 2장 이상의 그림을 넣어주세요",
                         Toast.LENGTH_LONG).show();
+                position = -1;
+                return null;
             }
             c.close();
         }
